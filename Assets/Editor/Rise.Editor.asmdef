@@ -1,0 +1,5 @@
+{
+    "name": "Rise.Editor",
+    "references": ["Rise.Runtime", "Unity.ugui", "UnityEditor.TestRunner", "UnityEngine.TestRunner"],
+    "includePlatforms": ["Editor"]
+}

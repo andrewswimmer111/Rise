@@ -1,0 +1,6 @@
+{
+    "name": "Rise.Runtime",
+    "rootNamespace": "Rise",
+    "references": ["Unity.ugui"],
+    "autoReferenced": true
+}
