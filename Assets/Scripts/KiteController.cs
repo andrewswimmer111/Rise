@@ -13,11 +13,11 @@ namespace Rise
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float bounceRetention = 0.8f;
         [SerializeField, Tooltip("Rigidbody2D gravity scale applied at Awake. Lower is floatier.")]
-        private float gravityScale = 0.55f;
+        private float gravityScale = 0.38f;
         [SerializeField, Tooltip("Rigidbody2D linear drag applied at Awake. Air resistance on both axes.")]
         private float linearDrag = 0.4f;
         [SerializeField, Tooltip("Extra exponential drag applied only while falling. 0 disables.")]
-        private float fallDamping = 1.6f;
+        private float fallDamping = 2.0f;
         [SerializeField, Range(0f, 1f),
          Tooltip("When a swipe opposes current horizontal motion, shed this fraction of the old horizontal velocity before adding the impulse. Makes turning crisper.")]
         private float turnAssist = 0.55f;
