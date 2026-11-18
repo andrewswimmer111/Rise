@@ -142,7 +142,10 @@ namespace Rise
 
         public void CollectShield()
         {
-            if (game.State == RunState.Playing) SetShield(true);
+            if (game.State == RunState.Playing) {
+                SetShield(true);
+                global::GameAudio.Instance?.PlayPickup();
+            }
         }
 
         public void HitHazard()
@@ -150,11 +153,18 @@ namespace Rise
             if (game.State != RunState.Playing || Time.time < graceUntil) return;
             if (HasShield)
             {
+                global::GameAudio.Instance?.PlayHit();
+
+
                 SetShield(false);
                 // Allow time to clear the same obstacle after the shield breaks.
                 graceUntil = Time.time + 0.45f;
             }
-            else game.EndRun("The kite hit a saw.");
+            else {
+                global::GameAudio.Instance?.PlayGameOver();
+                game.EndRun("The kite hit a saw.");
+
+            }
         }
 
         private void SetShield(bool active)
