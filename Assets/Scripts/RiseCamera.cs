@@ -5,8 +5,8 @@ namespace Rise
     [RequireComponent(typeof(Camera))]
     public sealed class RiseCamera : MonoBehaviour
     {
-        [SerializeField] private float automaticSpeed = 0.42f;
-        [SerializeField] private float followPosition = 0.58f;
+        [SerializeField] private float automaticSpeed = 0.5f;
+        [SerializeField] private float followPosition = 0.54f;
         private const float PortraitAspect = 9f / 16f;
         private Vector3 startPosition;
         public Camera Camera { get; private set; }

@@ -7,9 +7,9 @@ namespace Rise
     {
         [SerializeField] private Camera gameCamera;
         [SerializeField] private float minimumDistance = 0.025f;
-        [SerializeField] private float speedWeight = 2.2f;
+        [SerializeField] private float speedWeight = 2.6f;
         [SerializeField] private float distanceWeight = 0.9f;
-        [SerializeField] private float maximumImpulse = 4.2f;
+        [SerializeField] private float maximumImpulse = 5f;
 
         public event Action<Vector2> Swiped;
         private Vector2 start;

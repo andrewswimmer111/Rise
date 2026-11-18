@@ -7,11 +7,12 @@ namespace Rise
         [SerializeField] private Camera gameCamera;
         [SerializeField] private Sprite windPixel;
         [SerializeField] private int poolSize = 32;
-        [SerializeField] private int lightGustCount = 4;
-        [SerializeField] private int strongGustCount = 8;
-        [SerializeField] private float lightStreakPixels = 8f;
-        [SerializeField] private float strongStreakPixels = 16f;
+        [SerializeField] private int lightGustCount = 6;
+        [SerializeField] private int strongGustCount = 10;
+        [SerializeField] private float lightStreakPixels = 6f;
+        [SerializeField] private float strongStreakPixels = 12f;
         [SerializeField] private float duration = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float opacity = 0.5f;
         [SerializeField] private float lightGustSpeed = 2.2f;
         [SerializeField] private float strongGustSpeed = 6.8f;
         [SerializeField] private float fullStrengthImpulse = 4.2f;
@@ -110,7 +111,7 @@ namespace Rise
 
                 float fadeIn = Mathf.Clamp01(pixel.Age / 0.04f);
                 float fadeOut = Mathf.Clamp01((pixel.Lifetime - pixel.Age) / 0.2f);
-                pixel.Renderer.color = new Color(1f, 1f, 1f, fadeIn * fadeOut);
+                pixel.Renderer.color = new Color(1f, 1f, 1f, opacity * fadeIn * fadeOut);
             }
         }
 

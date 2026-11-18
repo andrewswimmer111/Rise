@@ -62,27 +62,29 @@ namespace Rise.Editor
             anchor.SetParent(child.transform, false);
             anchor.localPosition = new Vector3(0.25f, 0.25f, 0f);
 
-            SpriteRenderer kiteArt = SpriteObject("Kite", Sprite("kite"), null, 5);
-            kiteArt.transform.position = new Vector3(1.125f, 0.15f, 0f);
-            Rigidbody2D body = kiteArt.gameObject.AddComponent<Rigidbody2D>();
+            GameObject kiteObject = new GameObject("Kite");
+            kiteObject.transform.position = new Vector3(1.125f, 0.15f, 0f);
+            SpriteRenderer kiteArt = SpriteObject("Kite art", Sprite("kite"), kiteObject.transform, 5);
+            Rigidbody2D body = kiteObject.AddComponent<Rigidbody2D>();
             body.gravityScale = 0.32f;
             body.drag = 0.12f;
             body.freezeRotation = true;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            CircleCollider2D kiteCollider = kiteArt.gameObject.AddComponent<CircleCollider2D>();
+            CircleCollider2D kiteCollider = kiteObject.AddComponent<CircleCollider2D>();
             kiteCollider.radius = 0.34f;
-            KiteController kite = kiteArt.gameObject.AddComponent<KiteController>();
-            SpriteRenderer shieldVisual = SpriteObject("Active shield", Sprite("kite-shield"), kite.transform, 4);
+            KiteController kite = kiteObject.AddComponent<KiteController>();
+            SpriteRenderer shieldVisual = SpriteObject("Active shield", Sprite("kite-shield"), kiteArt.transform, 4);
             shieldVisual.gameObject.SetActive(false);
             Assign(kite, "game", game);
             Assign(kite, "followCamera", follow);
             Assign(kite, "shieldVisual", shieldVisual.gameObject);
+            Assign(kite, "kiteVisual", kiteArt.transform);
 
             LineRenderer line = new GameObject("Kite string").AddComponent<LineRenderer>();
             line.positionCount = 2;
             line.startWidth = line.endWidth = 1f / 16f;
-            line.startColor = line.endColor = new Color32(199, 207, 204, 255);
+            line.startColor = line.endColor = new Color(199f / 255f, 207f / 255f, 204f / 255f, 0.25f);
             line.sortingOrder = 0;
             line.SetPosition(0, anchor.position);
             line.SetPosition(1, kite.transform.position);
@@ -94,6 +96,7 @@ namespace Rise.Editor
             CourseSpawner course = new GameObject("Endless course").AddComponent<CourseSpawner>();
             Assign(course, "game", game);
             Assign(course, "followCamera", follow);
+            Assign(course, "stationarySawSprite", Sprite("saw-grey"));
             Assign(course, "bubbleSprite", Sprite("bubble"));
             Assign(course, "shieldSprite", Sprite("shield"));
             SerializedObject courseData = new SerializedObject(course);
@@ -155,6 +158,8 @@ namespace Rise.Editor
                     : name == "saw2" ? new Vector2(11f / 32f, 11f / 32f)
                     : new Vector2(0.5f, 0.5f);
                 importer.SetTextureSettings(settings);
+                // The wind is a single solid pixel; let the gust animation control its opacity.
+                if (name == "wind") importer.alphaSource = TextureImporterAlphaSource.None;
                 importer.SaveAndReimport();
             }
         }
@@ -321,6 +326,7 @@ namespace Rise.Editor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.npotScale = TextureImporterNPOTScale.None;
             importer.alphaIsTransparency = true;
+            importer.alphaSource = TextureImporterAlphaSource.None;
             TextureImporterSettings settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
             settings.spriteMeshType = SpriteMeshType.FullRect;

@@ -9,6 +9,10 @@ namespace Rise
         [SerializeField] private RiseCamera followCamera;
         [SerializeField] private GameObject shieldVisual;
 
+        [Header("Shield Break")]
+        [SerializeField, Min(0f)] private float shieldBreakGracePeriod = 0.9f;
+        [SerializeField, Min(0.01f)] private float shieldBlinkInterval = 0.1f;
+
         [Header("Flight Feel")]
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float bounceRetention = 0.8f;
@@ -23,7 +27,7 @@ namespace Rise
         private float turnAssist = 0.55f;
 
         [Header("Visual Tilt")]
-        [SerializeField, Tooltip("Child transform that holds the kite sprite. Rotated for visual tilt. Falls back to this transform if null.")]
+        [SerializeField, Tooltip("Artwork child to tilt. Keep the Rigidbody2D on the unrotated parent so physics interpolation stays smooth.")]
         private Transform kiteVisual;
         [SerializeField] private float maxTiltAngle = 32f;
         [SerializeField, Tooltip("Degrees of tilt per 1 unit/s of horizontal velocity.")]
@@ -33,9 +37,11 @@ namespace Rise
 
         private Rigidbody2D body;
         private Transform tiltTarget;
+        private SpriteRenderer kiteRenderer;
         private Vector2 startingPosition;
         private float radius;
         private float graceUntil;
+        private float graceStartedAt;
         private float currentTilt;
 
         public bool HasShield { get; private set; }
@@ -50,7 +56,9 @@ namespace Rise
             body.freezeRotation = true;
             startingPosition = body.position;
             radius = GetComponent<CircleCollider2D>().radius;
-            tiltTarget = kiteVisual != null ? kiteVisual : transform;
+            tiltTarget = kiteVisual != transform ? kiteVisual : null;
+            kiteRenderer = kiteVisual != null
+                ? kiteVisual.GetComponent<SpriteRenderer>() : GetComponent<SpriteRenderer>();
         }
 
         public void ResetKite()
@@ -63,6 +71,7 @@ namespace Rise
             currentTilt = 0f;
             ApplyTilt(0f);
             SetShield(false);
+            UpdateShieldBlink();
         }
 
         public void ApplyWind(Vector2 impulse)
@@ -83,6 +92,8 @@ namespace Rise
         {
             body.velocity = Vector2.zero;
             body.simulated = false;
+            graceUntil = 0f;
+            UpdateShieldBlink();
         }
 
         private void FixedUpdate()
@@ -101,20 +112,38 @@ namespace Rise
             if (position.x < -edge)
             {
                 position.x = -edge;
+                body.position = position;
                 velocity.x = Mathf.Abs(velocity.x) * bounceRetention;
             }
             else if (position.x > edge)
             {
                 position.x = edge;
+                body.position = position;
                 velocity.x = -Mathf.Abs(velocity.x) * bounceRetention;
             }
-            body.position = position;
+            // Only reposition at a wall. Reassigning position while coasting resets
+            // the pose that interpolation needs between physics updates.
             body.velocity = velocity;
         }
 
         private void LateUpdate()
         {
             UpdateTilt(Time.deltaTime);
+            UpdateShieldBlink();
+        }
+
+        private void UpdateShieldBlink()
+        {
+            if (kiteRenderer == null) return;
+            bool protectedAfterHit = game.State == RunState.Playing && Time.time < graceUntil;
+            int blink = Mathf.FloorToInt((Time.time - graceStartedAt) / Mathf.Max(0.01f, shieldBlinkInterval));
+            // Blink only the artwork; collisions and physics must keep running.
+            kiteRenderer.enabled = !protectedAfterHit || blink % 2 != 0;
+        }
+
+        private void OnDisable()
+        {
+            if (kiteRenderer != null) kiteRenderer.enabled = true;
         }
 
         private void UpdateTilt(float dt)
@@ -134,10 +163,7 @@ namespace Rise
         private void ApplyTilt(float angle)
         {
             if (tiltTarget == null) return;
-            if (tiltTarget == transform)
-                tiltTarget.rotation = Quaternion.Euler(0f, 0f, angle);
-            else
-                tiltTarget.localRotation = Quaternion.Euler(0f, 0f, angle);
+            tiltTarget.localRotation = Quaternion.Euler(0f, 0f, angle);
         }
 
         public void CollectShield()
@@ -152,7 +178,9 @@ namespace Rise
             {
                 SetShield(false);
                 // Allow time to clear the same obstacle after the shield breaks.
-                graceUntil = Time.time + 0.45f;
+                graceStartedAt = Time.time;
+                graceUntil = graceStartedAt + shieldBreakGracePeriod;
+                UpdateShieldBlink();
             }
             else game.EndRun("The kite hit a saw.");
         }
