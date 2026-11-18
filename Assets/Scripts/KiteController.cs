@@ -168,7 +168,7 @@ namespace Rise
 
         public void CollectShield()
         {
-            if (game.State == RunState.Playing) {
+            if (game.State == RunState.Playing && !HasShield) {
                 SetShield(true);
                 global::GameAudio.Instance?.PlayPickup();
             }
@@ -207,6 +207,7 @@ namespace Rise
             if (item == null || game.State != RunState.Playing) return;
             if (item.IsShield)
             {
+                global::GameAudio.Instance?.PlayHit(); // Bubble pops exactly on contact.
                 CollectShield();
                 item.Consume();
             }

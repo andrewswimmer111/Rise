@@ -72,6 +72,7 @@ namespace Rise
         public void EndRun(string reason)
         {
             if (State != RunState.Playing) return;
+            global::GameAudio.Instance?.StopWind();
             State = RunState.GameOver;
             EndReason = reason;
             kite.Freeze();
@@ -81,6 +82,7 @@ namespace Rise
 
         public void ResetRun()
         {
+            global::GameAudio.Instance?.StopWind();
             State = RunState.Waiting;
             EndReason = string.Empty;
             MaximumHeight = 0f;

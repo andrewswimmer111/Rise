@@ -107,3 +107,9 @@ This document records Lucas's game design as he supplies it. It describes intend
 Additional rules and design decisions will be added as Lucas describes them. Any additional failure conditions and other unmentioned mechanics remain open.
 
 - Saw appearance: stationary saws use `saw-grey`; moving saws use the small red `saw2` sprite. Both retain 16 pixels per world unit and rotate around their visual centers.
+
+## Audio feedback
+
+- Swipe wind uses 12% playback gain on a dedicated, non-stacking voice. Gusts last 0.5 seconds, with a 40 ms attack and 180 ms release; repeated swipes extend the same voice. Stop wind on game over and restart.
+- Bubble contact and shield break use a trimmed, preloaded pop clip without the original leading silence. Preserve the original audio export alongside the trimmed copy.
+- Play the item chime only when gaining a shield, not when touching another bubble while already protected. There is no height-point tick; the repetitive sound was part of swipe audio.

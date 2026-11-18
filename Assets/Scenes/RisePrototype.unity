@@ -2547,7 +2547,7 @@ MonoBehaviour:
   wind: {fileID: 8300000, guid: d78f9332c8f5c400d94da201c3048f6e, type: 3}
   launch: {fileID: 0}
   pickup: {fileID: 8300000, guid: 352fbe8fd034b4e3992fc77fef86d218, type: 3}
-  hit: {fileID: 8300000, guid: ff1d12ef99d2441759ad4bcfe2adf668, type: 3}
+  hit: {fileID: 8300000, guid: db1650cdea124ffc9e5fea0526a21d08, type: 3}
   gameOver: {fileID: 8300000, guid: 2cb3120eec3b948c89528f7557d9d33e, type: 3}
 --- !u!1 &1735683513
 GameObject:
@@ -2880,7 +2880,6 @@ MonoBehaviour:
   linearDrag: 0.4
   fallDamping: 2
   turnAssist: 0.55
-  kiteVisual: {fileID: 0}
   maxTiltAngle: 32
   tiltPerHorizontalSpeed: 10
   tiltResponsiveness: 9
