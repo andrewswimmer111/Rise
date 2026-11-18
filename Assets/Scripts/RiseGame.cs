@@ -36,6 +36,7 @@ namespace Rise
         {
             if (State == RunState.GameOver || impulse.sqrMagnitude < 0.001f) return;
             State = RunState.Playing;
+            global::GameAudio.Instance?.PlayWind();
             kite.ApplyWind(impulse);
             if (windGusts != null) windGusts.Emit(impulse);
         }
