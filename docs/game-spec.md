@@ -68,15 +68,15 @@ This document records Lucas's game design as he supplies it. It describes intend
 
 ## Height-based difficulty
 
-- Difficulty follows maximum height: the previous height-300 curve value is now reached at 100. The previous 150 milestone occurs at 50, and the final cap remains 500.
-- Generate irregular 2D placements in upcoming areas, not horizontal rows. Target 3, 4, then 5 saws per 8 world units of ascent at the three difficulty milestones. These are ceilings: reject crowded placements rather than forcing them in.
-- Prefer candidates that fill the largest vertical gaps rather than clumps. Only 12% of additional placements attempt a same-height pair. Moving saws have 0.65–1.35 units of amplitude (1.3–2.7 units end to end), limited by screen and passage clearance. If a moving placement cannot fit, try a stationary one.
+- Difficulty follows maximum height: the prior checkpoint height-400 difficulty value now appears at 100. Density continues increasing toward the existing cap at 500; kite handling remains constant.
+- Generate irregular 2D placements in upcoming areas. Target roughly 5 saws per 8 units at height 100, increasing to 8 at 500. These are ceilings: reject unsafe placements instead of forcing the target count.
+- Prefer well-separated 2D candidates using a capped reward plus randomness; occasional pairs remain possible. Moving amplitudes are 1–1.55 units (2–3.1 end to end), subject to full-sweep clearance. Failed moving placements can fall back to stationary saws.
 - Saws can share the same height. Keep their full horizontal sweep envelopes at least 1.5 units apart in 2D and reject heavy local clustering.
 - Sample positions across the screen, including its borders. There is no special border chance or alternating-side rule. Keep moving saw centers within the screen throughout their sine cycles so at least half stays visible.
-- Reserve a continuous, gently shifting passage with kite-radius clearance plus margin. Moving saws cannot cross this passage at any phase. This guarantees geometric connectivity; comfort with momentum still requires phone playtesting.
-- Moving-saw probability rises from 20% to 30% at height 50, then 40% at 500. Other saws remain horizontally stationary.
-- Keep sine-wave motion. Average travel speed over a full cycle is randomized within 0.55–0.85 units/second initially, 0.75–1.1 at 50, and 0.95–1.4 at 500. Turning-point velocity can still reach zero. Compute angular frequency from travel amplitude and desired average speed.
-- Keep small safe pockets around shields, centered on the navigable passage. Do not clear an entire horizontal row.
+- Do not reserve a centered passage. Reject connected chains of swept saw capsules spanning both usable screen borders, including diagonal walls. Expand sweeps by saw radius, kite radius, and 0.16 units of margin. This prevents geometric barriers at every sine phase; it does not prove that every route is comfortable with momentum.
+- Moving saws are disabled until the player reaches maximum height 50. Newly generated saws can move from then onward; existing stationary saws remain stationary. The height-scaled moving probability approaches 40% at 500, with realized proportions potentially lower after placement rejection.
+- Keep sine-wave motion. Average travel speed is randomized within 0.55–0.85 units/second initially, 0.75–1.1 at height 33.33, and 0.95–1.4 at 500. Turning-point velocity can reach zero. Calculate angular frequency from amplitude and average speed.
+- Keep small 1.4-unit safe pockets around shields at randomly chosen horizontal positions, reserved before spawning nearby saws. Do not clear a whole row.
 - Existing saws retain their spawn-time movement settings. Kite handling and camera speed do not scale with height. Restart resets the course.
 
 ## Power-ups

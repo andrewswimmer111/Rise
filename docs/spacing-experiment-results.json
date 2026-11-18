@@ -1,0 +1,35 @@
+{
+  "seeds": "0..99",
+  "domain": [
+    6,
+    24
+  ],
+  "points": 24,
+  "results": {
+    "Independent": {
+      "close_pairs_under_0.8": 3.76,
+      "mean_nearest_distance": 1.3612,
+      "nearest_distance_cv": 0.5634,
+      "sampled_max_empty_distance": 3.9104
+    },
+    "Jittered cells": {
+      "close_pairs_under_0.8": 0.75,
+      "mean_nearest_distance": 1.7525,
+      "nearest_distance_cv": 0.3555,
+      "sampled_max_empty_distance": 2.7176
+    },
+    "Minimum distance": {
+      "close_pairs_under_0.8": 0,
+      "mean_nearest_distance": 1.8351,
+      "nearest_distance_cv": 0.2459,
+      "sampled_max_empty_distance": 3.304
+    },
+    "Best of 16": {
+      "close_pairs_under_0.8": 0,
+      "mean_nearest_distance": 2.2783,
+      "nearest_distance_cv": 0.1742,
+      "sampled_max_empty_distance": 2.4628
+    }
+  },
+  "limitations": "Static points only; no physics, shields, routes, saw footprints or perception study. Minimum distance is rejection sampling, not Bridson. Best-of-16 has no hard distance guarantee."
+}

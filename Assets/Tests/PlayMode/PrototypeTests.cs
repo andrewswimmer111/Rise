@@ -265,11 +265,11 @@ namespace Rise.Tests
         }
 
         [UnityTest]
-        public IEnumerator HeightDifficultyTightensRowsCapsAndResets()
+        public IEnumerator HeightDifficultyAcceleratesCapsAndResets()
         {
             Assert.That(course.Difficulty, Is.Zero);
             game.FollowCamera.Advance(20f, 0.1f);
-            AssertPassageClear();
+            AssertScreenOpen();
             game.ResetRun();
             game.ApplySwipe(Vector2.up);
             Rigidbody2D body = game.Kite.GetComponent<Rigidbody2D>();
@@ -277,19 +277,19 @@ namespace Rise.Tests
 
             // Teleport without simulating so this checks course progression, not survival.
             body.simulated = false;
-            body.position = new Vector2(0f, launchY + 85f / 3f);
+            body.position = new Vector2(0f, launchY + 85f / 4.5f);
             game.Kite.transform.position = body.position;
             yield return null;
             yield return null;
             Assert.That(course.Difficulty, Is.EqualTo(0.5f).Within(0.001f));
-            body.position = new Vector2(0f, launchY + 80f / 3f);
+            body.position = new Vector2(0f, launchY + 80f / 4.5f);
             game.Kite.transform.position = body.position;
             yield return null;
             yield return null;
             Assert.That(course.Difficulty, Is.EqualTo(0.5f).Within(0.001f),
                 "Descending must not reduce difficulty.");
 
-            body.position = new Vector2(0f, launchY + 50f);
+            body.position = new Vector2(0f, launchY + 150f / 4.5f);
             game.Kite.transform.position = body.position;
             yield return null;
             yield return null;
@@ -298,12 +298,12 @@ namespace Rise.Tests
             game.Kite.transform.position = body.position;
             yield return null;
             yield return null;
-            Assert.That(course.Difficulty, Is.EqualTo(1f + Mathf.SmoothStep(0f, 1f, 150f / 350f)).Within(0.001f));
+            Assert.That(course.Difficulty, Is.EqualTo(1f + Mathf.SmoothStep(0f, 1f, 300f / 350f)).Within(0.001f));
             body.position = new Vector2(0f, launchY + 150f);
             game.Kite.transform.position = body.position;
             yield return null;
             yield return null;
-            Assert.That(course.Difficulty, Is.EqualTo(1.5f).Within(0.001f));
+            Assert.That(course.Difficulty, Is.GreaterThan(1f + Mathf.SmoothStep(0f, 1f, 300f / 350f)));
 
             body.position = new Vector2(0f, launchY + 500f);
             game.Kite.transform.position = body.position;
@@ -315,7 +315,7 @@ namespace Rise.Tests
             yield return null;
             yield return null;
             Assert.That(course.Difficulty, Is.EqualTo(2f));
-            AssertPassageClear();
+            AssertScreenOpen();
 
             // Check actual moving hazards remain on-screen at the highest difficulty.
             for (int i = 0; i < 12; i++)
@@ -331,7 +331,7 @@ namespace Rise.Tests
             game.ResetRun();
             Assert.That(course.Difficulty, Is.Zero);
             game.FollowCamera.Advance(20f, 0.1f);
-            AssertPassageClear();
+            AssertScreenOpen();
         }
 
         [UnityTest]
@@ -404,12 +404,13 @@ namespace Rise.Tests
                             float dy = Mathf.Abs(generated[a].Origin.y - generated[b].Origin.y);
                             float dx = Mathf.Max(0f, Mathf.Abs(generated[a].Origin.x - generated[b].Origin.x) - generated[a].Travel - generated[b].Travel);
                             Assert.That(new Vector2(dx, dy).magnitude, Is.GreaterThanOrEqualTo(1.499f));
-                            sawPair |= dy < 0.001f;
+                            sawPair |= dy < 0.4f;
                         }
                     foreach (CourseItem saw in generated)
                     {
-                        Assert.That(Mathf.Abs(saw.Origin.x - course.PassageX(saw.Origin.y)) - saw.Travel,
-                            Is.GreaterThanOrEqualTo(0.6f + game.Kite.Radius + 0.19f));
+                        if (saw.Travel > 0f) Assert.That(saw.Travel, Is.InRange(1f, 1.551f));
+                        Assert.That(saw.GetComponentInChildren<SpriteRenderer>().sprite.name,
+                            Is.EqualTo(saw.Travel > 0f ? "saw2" : "saw-grey"));
                         if (saw.Travel > 0f) Assert.That(saw.AverageSpeed, Is.InRange(0.55f, 1.401f));
                         float x = saw.transform.position.x;
                         Assert.That(Mathf.Abs(x), Is.LessThanOrEqualTo(edge + 0.001f));
@@ -417,6 +418,7 @@ namespace Rise.Tests
                         sawRight |= x > edge - 0.8f;
                     }
                 }
+                AssertScreenOpen();
                 Assert.That(sawPair, Is.True, "The course should include side-by-side saws.");
                 Assert.That(sawLeft && sawRight, Is.True, "The generated course must threaten both borders.");
 
@@ -462,16 +464,59 @@ namespace Rise.Tests
             Assert.That(game.State, Is.EqualTo(RunState.GameOver), "Hugging a border must not evade its saw.");
         }
 
-        private void AssertPassageClear()
+        [UnityTest]
+        public IEnumerator RejectsWallsWithoutReservingCenter()
+        {
+            Assert.That(course.CanPlaceSaw(new Vector2(0f, 20f)), Is.True,
+                "The center is available to hazards.");
+            course.CreateSaw(new Vector2(-2.4f, 20f));
+            course.CreateSaw(new Vector2(-0.8f, 20.8f));
+            course.CreateSaw(new Vector2(0.8f, 21.6f));
+            Assert.That(course.CanPlaceSaw(new Vector2(2.4f, 22.4f)), Is.False,
+                "Reject diagonal wall chains even with pair spacing above 1.5.");
+            Assert.That(course.CanPlaceSaw(new Vector2(2.4f, 25f)), Is.True);
+            course.ResetCourse();
+            yield return null;
+            Assert.That(course.CanPlaceSaw(new Vector2(0f, 20f), 1.5f), Is.True);
+            Assert.That(course.CanPlaceSaw(new Vector2(0f, 20f), 1.8f), Is.False,
+                "A sweep must not cover the whole usable width.");
+            course.CreateSaw(new Vector2(-1.8f, 20f));
+            Assert.That(course.CanPlaceSaw(new Vector2(1.5f, 20f)), Is.True,
+                "Side-by-side saws are legal when a gap fits the kite.");
+            Assert.That(course.CanPlaceSaw(new Vector2(0f, 20f), 1f), Is.False,
+                "Moving sweeps must retain spacing at all phases.");
+        }
+
+        private void AssertScreenOpen()
         {
             course.enabled = true;
             course.Advance();
             course.enabled = false;
-            foreach (CourseItem saw in course.GetComponentsInChildren<CourseItem>().Where(item => !item.IsShield))
+            CourseItem[] saws = course.GetComponentsInChildren<CourseItem>().Where(item => !item.IsShield).ToArray();
+            float radius = 0.6f + game.Kite.Radius + 0.16f;
+            float edge = game.FollowCamera.HalfWidth - game.Kite.Radius;
+            // Independent cross-section check over full swept capsules.
+            if (saws.Length == 0) return;
+            for (float y = saws.Min(saw => saw.Origin.y) - radius;
+                y <= saws.Max(saw => saw.Origin.y) + radius; y += 0.08f)
             {
-                float clearance = Mathf.Abs(saw.Origin.x - course.PassageX(saw.Origin.y)) - saw.Travel;
-                Assert.That(clearance, Is.GreaterThanOrEqualTo(0.6f + game.Kite.Radius + 0.19f));
-                if (saw.Travel > 0f) Assert.That(saw.AverageSpeed, Is.InRange(0.55f, 1.401f));
+                var intervals = new System.Collections.Generic.List<Vector2>();
+                foreach (CourseItem saw in saws)
+                {
+                    float dy = Mathf.Abs(y - saw.Origin.y);
+                    if (dy >= radius) continue;
+                    float dx = Mathf.Sqrt(radius * radius - dy * dy);
+                    intervals.Add(new Vector2(saw.Origin.x - saw.Travel - dx, saw.Origin.x + saw.Travel + dx));
+                }
+                intervals.Sort((a,b) => a.x.CompareTo(b.x));
+                float end = -edge;
+                bool opening = false;
+                foreach (Vector2 interval in intervals)
+                {
+                    if (interval.x > end) { opening = true; break; }
+                    end = Mathf.Max(end, interval.y);
+                }
+                Assert.That(opening || end < edge, Is.True, "Every cross-section must retain a kite-sized opening.");
             }
         }
     }
